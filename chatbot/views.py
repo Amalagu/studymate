@@ -30,11 +30,8 @@ openai.api_key = config['OPENAI_API_KEY'] """
 embeddings = OpenAIEmbeddings()
 # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
 
-
-
 loader = Docx2txtLoader("./handbook.docx")
 handbook_doc = loader.load()
-
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 docs_structure = text_splitter.split_documents(handbook_doc)
 vectorstore_db = FAISS.from_documents(docs_structure, embeddings)
@@ -100,119 +97,6 @@ def chatbot(request):
         chat.save()
         return JsonResponse({'message': message, 'response': response})
     return render(request, 'chatbot.html', {'chats': chats})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#advisor_role = """YouR name is Mr. Vitalis, you are a course adviser to the final year (500 level) students
-#  of the Federal University of Technology. 
-#  Please act the role and refer any enquiry that you are not sure of to the Departments Admin Officer (DAO)."""
-
-
-
-
-""" def ask_openai(message):
-    response = openai.ChatCompletion.create(
-        model = "gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": advisor_role},
-            {"role": "user", "content": advisor_role },
-            {"role": "assistant", "content": "I am Mr. Vitalis your Course Adviser"},
-            {"role": "user", "content": message},
-        ],
-    )
-    
-    answer = response.choices[0].message.content.strip()
-    return answer
-
-# Create your views here.
-def chatbot(request):
-    chats = Chat.objects.filter(user=request.user)
-
-    if request.method == 'POST':
-        message = request.POST.get('message')
-        response = ask_openai(message)
-
-        chat = Chat(user=request.user, message=message, response=response, created_at=timezone.now())
-        chat.save()
-        return JsonResponse({'message': message, 'response': response})
-    return render(request, 'chatbot.html', {'chats': chats})
-
-
- """
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
