@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.db.models import JSONField
 # Create your models here.
 class Chat(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -10,3 +10,13 @@ class Chat(models.Model):
 
     def __str__(self):
         return f'{self.user.username}: {self.message}'
+
+
+
+class ChatModel(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    conversation_history = JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username}: Conversation'

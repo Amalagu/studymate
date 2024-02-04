@@ -5,8 +5,7 @@ import openai
 from django.contrib import auth
 from django.contrib.auth.models import User
 from .models import Chat
-
-
+from .models import ChatModel
 
 from langchain_community.document_loaders import Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -86,7 +85,7 @@ def get_response_from_query(db, query, k=4):
 
 
 
-def chatbot(request):
+""" def chatbot(request):
     chats = Chat.objects.filter(user=request.user)
 
     if request.method == 'POST':
@@ -98,8 +97,29 @@ def chatbot(request):
         return JsonResponse({'message': message, 'response': response})
     return render(request, 'chatbot.html', {'chats': chats})
 
+ """
 
+def chatbot(request):
+    chats = ChatModel.objects.filter(user=request.user).order_by('-created_at').first()
 
+    if request.method == 'POST':
+        message = request.POST.get('message')
+        response, docs = get_response_from_query(vectorstore_db, message)
+
+        if chats:
+            # If there is an existing chat, update the conversation history
+            chat_history = chats.conversation_history
+            chat_history[f'user_msg {len(chat_history) + 1}'] = message
+            chat_history[f'bot_response {len(chat_history)}'] = response
+            chats.save()
+        else:
+            # If no existing chat, create a new one
+            chat_history = {f'user_msg 1': message, f'bot_response 1': response}
+            new_chat = ChatModel(user=request.user, conversation_history=chat_history)
+            new_chat.save()
+
+        return JsonResponse({'message': message, 'response': response})
+    return render(request, 'chatbot.html', {'chats': chats})
 
 
 

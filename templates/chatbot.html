@@ -2,65 +2,66 @@
 
 {% block styles %}
 <style>
-    body, html {
-      height: 100%;
-    }
+  body,
+  html {
+    height: 100%;
+  }
 
-    .messages-box {
-      flex: 1;
-      overflow-y: auto;
-    }
+  .messages-box {
+    flex: 1;
+    overflow-y: auto;
+  }
 
-    .messages-list {
-      padding-left: 0;
-    }
+  .messages-list {
+    padding-left: 0;
+  }
 
-    .message {
-      margin-bottom: 15px;
-      list-style: none;
-    }
+  .message {
+    margin-bottom: 15px;
+    list-style: none;
+  }
 
-    .message-text {
-      padding: 10px;
-      border-radius: 5px;
-    }
+  .message-text {
+    padding: 10px;
+    border-radius: 5px;
+  }
 
-    .sent {
-      background-color: #dcf8c6;
-      align-self: flex-end;
-    }
+  .sent {
+    background-color: #dcf8c6;
+    align-self: flex-end;
+  }
 
-    .received {
-      background-color: #f1f0f0;
-      align-self: flex-start;
-    }
+  .received {
+    background-color: #f1f0f0;
+    align-self: flex-start;
+  }
 
-    .message-form {
-      display: flex;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 10px;
-      background-color: #f8f9fa;
-    }
+  .message-form {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+  }
 
-    .message-input {
-      flex: 1;
-      border-radius: 0;
-      border-right: none;
-    }
+  .message-input {
+    flex: 1;
+    border-radius: 0;
+    border-right: none;
+  }
 
-    .btn-send {
-      border-radius: 0;
-    }
+  .btn-send {
+    border-radius: 0;
+  }
 
-    .chat-container {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-  </style>
+  .chat-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
 {% endblock %}
 
 
@@ -69,14 +70,16 @@
   <div class="card flex-grow-1">
     <div class="card-header bg-primary text-white">Chat</div>
     {% if user.is_authenticated %}
-    <div class="card-header bg-primary text-white"><b>Welcome, {{user.username}}</b>   <a style="color: yellow;" href="logout">Logout</a></div>
+    <div class="card-header bg-primary text-white"><b>Welcome, {{user.username}}</b> <a style="color: yellow;"
+        href="logout">Logout</a></div>
     {% else %}
-    <div class="card-header bg-primary text-white"><a style="color: yellow" href="login">Login</a>   <a style="color: yellow;" href="register">Register</a></div>
+    <div class="card-header bg-primary text-white"><a style="color: yellow" href="login">Login</a> <a
+        style="color: yellow;" href="register">Register</a></div>
     {% endif %}
     <div class="card-body messages-box">
-      
+
       <ul class="list-unstyled messages-list">
-        
+
         <!-- <li class="message received">
           <div class="message-text">
             <div class="message-sender">
@@ -87,37 +90,39 @@
             </div>
           </div>
         </li> -->
-
-        {% for chat in chats %}
-          {% if chat.user == request.user %}
-
-            <li class="message sent">
-          <div class="message-text">
-            <div class="message-sender">
-              <b>You</b>
+        {% if chats %}
+        <ul class="chat">
+          {% for key, value in chats.conversation_history.items %}
+          {% if 'user_msg' in key %}
+          <li class="message sent">
+            <div class="message-text">
+              <div class="message-sender">
+                <b>You</b>
+              </div>
+              <div class="message-content">
+                {{ value }}
+              </div>
             </div>
-            <div class="message-content">
-              {{chat.message}}
+          </li>
+          {% elif 'bot_response' in key %}
+          <li class="message received">
+            <div class="message-text">
+              <div class="message-sender">
+                <b>AI Chatbot</b>
+              </div>
+              <div class="message-content">
+                {{ value }}
+              </div>
             </div>
-          </div>
-        </li>
-
-        <li class="message received">
-          <div class="message-text">
-            <div class="message-sender">
-              <b>AI Chatbot</b>
-            </div>
-            <div class="message-content">
-              {{chat.response}}
-            </div>
-          </div>
-        </li>
-
+          </li>
           {% endif %}
-        {% endfor %}
-        
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+
       </ul>
-      
+
     </div>
     <br><br>
     <br><br>
