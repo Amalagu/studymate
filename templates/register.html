@@ -1,102 +1,94 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block title %}Register{% endblock %}
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="{% static 'public/assets/images/logo.svg' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://unpkg.com/petite-vue" defer init></script>
+  <title>StudyMate - FUTO</title>
+</head>
 
-{% block styles %}
-<style>
-  body {
-    background-color: #f0f0f0;
-  }
-  .register-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  .card {
-    max-width: 400px;
-  }
-  .card-header {
-    background-color: #007bff;
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-  }
-  .card-body {
-    padding: 30px;
-  }
-  .form-group {
-    margin-bottom: 20px;
-  }
-  label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-  }
-  input[type=text], input[type=password] {
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 16px;
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-  }
-  button[type=submit] {
-    background-color: #007bff;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-  }
-  button[type=submit]:hover {
-    background-color: #0062cc;
-  }
-  .alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
-  }
-</style>
-{% endblock %}
+<body>
+  <div id=""></div>
 
-{% block content %}
-<div class="register-container">
-  <div class="card">
-    <div class="card-header">Register</div>
-    <div class="card-body">
-      {% if error_message %}
-        <div class="alert alert-danger" role="alert">{{ error_message }}</div>
-      {% endif %}
-      <form method="post">
+  <main class="w-[100dvw] h-[100dvh] flex flex-col center">
+    <div class="flex flex-col center gap-2">
+      <h1 class="text-2xl font-light text-primary select-none">Register</h1>
+    </div>
+
+    <div class="h-[25rem] w-96 flex flex-col gap-10 lg:shadow-lg lg:p-5 lg:rounded justify-center">
+
+      <div id="logo-component"></div>
+
+      <form method="post" class="flex flex-col gap-6 text-body-400">
         {% csrf_token %}
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" class="form-control" id="username" name="username" required>
+
+        <div v-scope="{ isFocused: false }" class="flex flex-col relative">
+          <label for="username" :class="['absolute left-2  transition',
+          isFocused ? '-translate-y-[.75rem] bg-primary-50 px-2 text-sm font-semibold'
+          : 'top-[.75rem]']">
+            Username
+          </label>
+
+          <input class="input rounded h-12" @focus="isFocused = true"
+            @blur="$el.value === '' ? isFocused = false : true" type="text" id="username" name="username"
+            value="{{ form.username.value }}">
         </div>
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="text" class="form-control" id="email" name="email" required>
+
+        <div v-scope="{ isFocused: false }" class="flex flex-col relative">
+
+          <label for="email" :class="['absolute left-2  transition',
+          isFocused ? '-translate-y-[.75rem] bg-primary-50 px-2 text-sm font-semibold'
+          : 'top-[.75rem]']">
+            Email
+          </label>
+
+          <input class="input rounded h-12" @focus="isFocused = true"
+            @blur="$el.value === '' ? isFocused = false : true" type="email" id="email" name="email"
+            value="{{ form.email.value }}">
+
         </div>
-        <div class="form-group">
-          <label for="password1">Password</label>
-          <input type="password" class="form-control" id="password1" name="password1" required>
+
+        <div v-scope="{ isFocused: false }" class="flex flex-col relative">
+
+          <label for="password1" :class="['absolute left-2  transition',
+          isFocused ? '-translate-y-[.75rem] bg-primary-50 px-2 text-sm font-semibold'
+          : 'top-[.75rem]']">
+            Password
+          </label>
+
+          <input class="input rounded h-12" @focus="isFocused = true"
+            @blur="$el.value === '' ? isFocused = false : true" type="password" id="password1" name="password1"
+            value="{{ form.password1.value }}">
+
         </div>
-        <div class="form-group">
-          <label for="password2">Confirm Password</label>
-          <input type="password" class="form-control" id="password2" name="password2" required>
+
+        <div v-scope="{ isFocused: false }" class="flex flex-col relative">
+
+          <label for="password2" :class="['absolute left-2  transition',
+          isFocused ? '-translate-y-[.75rem] bg-primary-50 px-2 text-sm font-semibold'
+          : 'top-[.75rem]']">
+            Confirm Password
+          </label>
+
+          <input class="input rounded h-12" @focus="isFocused = true"
+            @blur="$el.value === '' ? isFocused = false : true" type="password" id="password2" name="password2"
+            value="{{ form.password2.value }}">
+
         </div>
-        <button type="submit">Register</button>
+
+        <button class="btn-primary bg-[var(--primary)] rounded h-12 transition rounded" type="submit">Register</button>
+
       </form>
     </div>
-  </div>
-</div>
-{% endblock %}
+  </main>
+
+  <script type="module" src="{% static 'js/main.js' %}"></script>
+  <script type="module" src="{% static 'js/login.js' %}"></script>
+</body>
+
+</html>

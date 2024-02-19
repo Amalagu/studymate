@@ -1,0 +1,169 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+    <title>Study Mate</title>
+</head>
+
+<body>
+
+    <!-- Menu for small screens -->
+    <div class="header-options-small" id="menu">
+        <button type="button" class="mode-button">
+            <p>Light mode</p>
+            <span class="material-symbols-rounded">light_mode</span>
+        </button>
+        <!-- Logout -->
+        <a href="{% url 'logout' %}">
+            <button type="button" class="logout-button">Logout</button>
+        </a>
+    </div>
+
+    <div class="overlay"></div>
+
+    <header>
+        <div class="header-top">
+            <img src="{% static 'img/FUTO_logo.png' %}" alt="futo-logo">
+            <h1>Study Mate</h1>
+
+            <button type="button" class="more-button" id="more-button">
+                <span class="material-symbols-rounded">more_vert</span>
+            </button>
+
+            <div class="header-options-large">
+                <button type="button" class="mode-button">
+                    <span class="material-symbols-rounded">light_mode</span>
+                </button>
+                <!-- Logout -->
+                <a href="logout">
+                    <button type="button" class="logout-button">Logout</button>
+                </a>
+            </div>
+        </div>
+
+        <div class="header-bottom">
+            <div class="avatar">A</div>
+            <div class="username">Welcome, {{user.username}}</div>
+        </div>
+    </header>
+
+    <section class="chat-area">
+        {% if chats %}
+        {% for key, value in chats.conversation_history.items %}
+        {% if 'user_msg' in key %}
+        <div class="chat user-chat">
+            <div class="chat-header chat-header-user">
+                <p>You</p>
+                <div class="avatar user-avatar">
+                    <!-- Insert AI image here -->
+                    <img src="" alt="" />
+                </div>
+            </div>
+
+            <div class="chatbox user-chatbox">
+                <p>{{ value }}</p>
+            </div>
+        </div>
+        {% elif 'bot_response' in key %}
+        <div class="chat bot-chat">
+            <div class="chat-header chat-header-ai">
+                <div class="avatar ai-avatar">
+                    <!-- Insert AI image here -->
+                    <img src="" alt="" />
+                </div>
+                <p>AI</p>
+            </div>
+
+            <div class="chatbox ai-chatbox">
+                <p> {{ value }}</p>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        <!-- <div class="focus-el"></div> -->
+    </section>
+
+    <footer>
+        <form method="post" class="message-form">
+            {% csrf_token %}
+            <input type="text" class="message-input" placeholder="Your message..." />
+            <button type="submit" class="submit-btn">
+                <span class="material-symbols-rounded">send</span>
+            </button>
+        </form>
+    </footer>
+
+
+    <script>
+        const chatArea = document.querySelector('.chat-area');
+        const messageForm = document.querySelector('.message-form');
+        const messageInput = document.querySelector('.message-input');
+        /* const focusEl = document.querySelector('.focus-el') */
+
+
+        messageForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const message = messageInput.value.trim();
+            if (message.length === 0) {
+                return;
+            }
+
+            const chatItem = document.createElement('div');
+            chatItem.classList.add('chat', 'user-chat');
+            chatItem.innerHTML = `
+        <div class="chat-header chat-header-user">
+          <p>You</p>
+          <div class="avatar user-avatar">
+            <!-- Insert user avatar image here -->
+            <img src="" alt="" />
+          </div>
+        </div>
+        <div class="chatbox user-chatbox">
+          <p>${message}</p>
+        </div>`;
+
+            chatArea.appendChild(chatItem);
+            messageInput.value = '';
+            /*   focusEl.scrollIntoView(); */
+
+            fetch('', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'message': message
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const response = data.response;
+                    const chatItem = document.createElement('div');
+                    chatItem.classList.add('chat', 'bot-chat');
+                    chatItem.innerHTML = `
+            <div class="chat-header chat-header-ai">
+              <div class="avatar ai-avatar">
+                <!-- Insert AI avatar image here -->
+                <img src="" alt="" />
+              </div>
+              <p>AI</p>
+            </div>
+            <div class="chatbox ai-chatbox">
+              <p>${response}</p>
+            </div>`;
+                    chatArea.appendChild(chatItem);
+                });
+        });
+
+    </script>
+</body>
+
+</html>
