@@ -76,10 +76,21 @@ WSGI_APPLICATION = 'django_chatbot.wsgi.application'
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'chatbot',
+        'USER': 'postgres',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',  # Or your PostgreSQL server's IP address
+        'PORT': '5432',       # Default PostgreSQL port
+    }
+}
+
+""" DATABASES = {
+    'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-}
+} """
 
 
 # Password validation
