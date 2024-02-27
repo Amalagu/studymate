@@ -29,7 +29,7 @@ import faiss
 from pathlib import Path
 import os
 
-
+from django.views.decorators.csrf import csrf_protect, csrf_exempt 
 #####################################
 #   INITIAL SETUP
 #####################################
@@ -69,7 +69,7 @@ def get_vectorstore(text_chunks):
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
-
+@csrf_protect
 def register(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -95,7 +95,7 @@ def register(request):
     return render(request, 'register.html')
 
 
-
+@csrf_protect
 def login(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -111,7 +111,7 @@ def login(request):
         return render(request, 'login.html')
 
 
-
+@csrf_protect
 def logout(request):
     auth.logout(request)
     return redirect('login')
@@ -190,6 +190,50 @@ def upload_file(request):
 ############################################################################
 
 
+""" def format_conversation_history(conversation_history):
+    formatted_history = [{'role': 'system', 'content': "You are a note reading assistant"},]
+    for prompt, response in conversation_history.items():
+        tempdict = {}
+        if 'user_msg' in prompt.split():
+            tempdict['role'] = 'user'
+        else:
+            tempdict['role'] = 'assistant'
+        tempdict['content'] = response
+        formatted_history.append(tempdict)
+    return formatted_history """
+
+
+def format_conversation_history(conversation_history):
+    """
+    Format the conversation history to be passed to default_query parameter.
+    """
+    formatted_history = [{'role': 'system', 'content': "You are a note reading assistant"},]
+    chatconversation_items = list(conversation_history.items())
+    if len(chatconversation_items) >= 4:
+        last_entries = chatconversation_items[-4:]
+    elif len(chatconversation_items) >= 2:
+        last_entries = chatconversation_items[-2:]
+    else:
+        last_entries = []
+        return []
+    for prompt, response in last_entries:
+        tempdict = {}
+        if 'user_msg' in prompt.split():
+            tempdict['role'] = 'user'
+        else:
+            tempdict['role'] = 'assistant'
+        tempdict['content'] = response
+        formatted_history.append(tempdict)
+    return formatted_history
+
+messages= [
+    {'role': 'system', 'content': "You are a note reading assistant"},
+    {'role': 'user', 'content': "Hello"},
+    {'role': 'assistant', 'content': "I am fine"},
+    {'role': 'user', 'content': "Hello"},
+    {'role': 'assistant', 'content': "I am fine"},
+]
+
 def get_response_from_student_data(user, query, k=2):
     search_results = {}
     try:
@@ -204,23 +248,80 @@ def get_response_from_student_data(user, query, k=2):
         db = FAISS.load_local(doc.filepath, embeddings)
         docs = db.similarity_search(query, k)
         search_results[filename]  = " ".join([d.page_content for d in docs])
-        
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", max_tokens=250)
+    
+    conversation_history = format_conversation_history(user_chat.conversation_history)
+    """ chatconversation_items = list(user_chat.conversation_history.items())
+    if len(chatconversation_items) >= 4:
+        last_entries = chatconversation_items[-4:]
+    elif len(chatconversation_items) >= 2:
+        last_entries = chatconversation_items[-2:]
+    else:
+        last_entries = []
+    for index, (prompt_key, response_key) in enumerate(last_entries, start=1):
+        tempdict={}
+        if 'user_msg' in prompt_key.split():
+            tempdict['role'] = 'user'
+        else:
+            tempdict['role'] = 'assistant'
+        tempdict['content'] = response_key
+        conversation_history.append(tempdict) """
+    
+
+    system_message = f"""
+    Task Definition:
+    As a student reading assistant, your primary goal is to help students comprehend their lecture notes effectively. 
+    You'll achieve this by providing concise yet comprehensive explanations, examples, and analogies when necessary.
+
+    Task Details:
+    Your task is to respond to user questions using your knowledge base with the provided lecture notes as context. The Conversation history gives you
+    context and  insight into your recent interation with the user. Your responses should be 
+    brief, comprehensive, and directly related to the documents provided. If a question falls outside the scope of 
+    the provided context and the context of the provided recent conversation history,
+    respond with "This Question Seems to Be Out of the Scope of Your Lecture Notes." however you can
+    always respond to greetings and pleasantries.
+
+    Template Variables:
+    - User: {user} (This variable represents the user's name or identifier.)
+    - Question: {query} (The question posed by the user.)
+    - Documents: {search_results} (List of documents from the lecture notes used as context.)
+    - Conversation: {conversation_history} (A dictionary of recent history past conversations with the user)
+
+    Remember, your role is to assist students in understanding their study materials better using your knowledge base with the provided lecture notes as context 
+    (you only refer or call their names when necessary). Good luck!
+    """
+
+
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo",
+                    max_tokens=250,
+                    #default_query= system_message
+                    )
     prompt = PromptTemplate(
-        input_variables=["question", "docs", "user"],
+        input_variables=["question", "docs", "user", "conversation_history"],
         template="""
-        You are a students' reading assistant who helps them comprehend their notes better,
-        by giving them brief and comprehensive explanations (with examples and even analogies ) where necessary.
-        Answer the following question from me: {question}
-        By only using the following documents (from my lecture notes) as context: {docs}
-        Your response should be brief, comprehensive and should only expand more on the document when requested in the question. If the question
-        is not related to the provided context, simply respond with "This Question Seem To Be Out Of the Scope 
-        Of Your Lecture Note".
-        My name is {user}, but refer to me only when necessary.
-        """,
+    Task Definition:
+    As a student reading assistant, your primary goal is to help students comprehend their lecture notes effectively. 
+    You'll achieve this by providing concise yet comprehensive explanations, examples, and analogies when necessary.
+
+    Task Details:
+    Your task is to CONTINUE THIS CONVERSATION: {conversation_history} AND respond to user questions using your knowledge base with the provided lecture notes as context. The Conversation history gives you
+    context and  insight into your recent interation with the user. Your responses should be 
+    brief, comprehensive, and directly related to the documents provided. If a question falls outside the scope of 
+    the provided context and the context of the provided recent conversation history,
+    respond with "This Question Seems to Be Out of the Scope of Your Lecture Notes." however you can
+    always respond to greetings and pleasantries.
+
+    Template Variables:
+    - User: {user} (This variable represents the user's name or identifier.)
+    - Question: {question} (The question posed by the user.)
+    - Documents: {docs} (List of documents from the lecture notes used as context.)
+    - Conversation:  (A dictionary of recent history past conversations with the user)
+
+    Remember, your role is to assist students in understanding their study materials better using your knowledge base with the provided lecture notes as context 
+    (you only refer or call their names when necessary). Good luck!
+    """,
     )
     chain = LLMChain(llm=llm, prompt=prompt)
-    response = chain.invoke({'question':query, 'docs': search_results, 'user': user.username})
+    response = chain.invoke({'question':query, 'docs': search_results, 'user': user.username, "conversation_history": conversation_history})
     response = response['text']
     return response, docs
 
@@ -253,7 +354,16 @@ def chatbot(request):
 
 
 
-
+"""
+        You are a students' reading assistant who helps them comprehend their notes better,
+        by giving them brief and comprehensive explanations (with examples and even analogies ) where necessary.
+        Answer the following question from me: {question}
+        By only using the following documents (from my lecture notes) as context: {docs}
+        Your response should be brief, comprehensive and should only expand more on the document when requested in the question. If the question
+        is not related to the provided context, simply respond with "This Question Seem To Be Out Of the Scope 
+        Of Your Lecture Note".
+        My name is {user}, but refer to me only when necessary.
+        """
 
 
 

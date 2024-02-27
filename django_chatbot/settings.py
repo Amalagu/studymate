@@ -148,4 +148,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/login'
 
-ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['*', 'https://22ee-105-113-40-166.ngrok-free.app']
+ALLOWED_HOSTS = ['your_domain.com', 'localhost', '22ee-105-113-40-166.ngrok-free.app', '*']
+# settings.py
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://example.com',
+    'http://localhost:8000',
+    'https://22ee-105-113-40-166.ngrok-free.app',
+    'https://22ee-105-113-40-166.ngrok-free.app'
+    # Add more trusted origins as needed
+]

@@ -107,7 +107,7 @@
         const chatArea = document.querySelector('.chat-area');
         const messageForm = document.querySelector('.message-form');
         const messageInput = document.querySelector('.message-input');
-        /* const focusEl = document.querySelector('.focus-el') */
+        const focusEl = document.querySelector('.focus-el')
 
 
         messageForm.addEventListener('submit', (event) => {
@@ -133,7 +133,7 @@
 
             chatArea.appendChild(chatItem);
             messageInput.value = '';
-            /*   focusEl.scrollIntoView(); */
+            focusEl.scrollIntoView();
 
             fetch('', {
                 method: 'POST',
