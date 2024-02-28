@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -77,6 +78,13 @@
         {% if error_message %}
         <div class="alert alert-danger" role="alert">{{ error_message }}</div>
         {% endif %}
+
+        {% if messages %}
+        {% for message in messages %}
+        <div {% if message.tags %} class="alert alert-danger" {% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
         <form action=# method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">

@@ -107,8 +107,8 @@
         const chatArea = document.querySelector('.chat-area');
         const messageForm = document.querySelector('.message-form');
         const messageInput = document.querySelector('.message-input');
-        const focusEl = document.querySelector('.focus-el')
-
+        /* const focusEl = document.querySelector('.focus-el'); */
+        let responseCounter = 0;
 
         messageForm.addEventListener('submit', (event) => {
             event.preventDefault();
@@ -121,20 +121,20 @@
             chatItem.classList.add('chat', 'user-chat');
             chatItem.innerHTML = `
         <div class="chat-header chat-header-user">
-          <p>You</p>
-          <div class="avatar user-avatar">
-            <!-- Insert user avatar image here -->
-            <img src="{% static 'img/student.jpeg' %}" alt="" />
-          </div>
+            <p>You</p>
+            <div class="avatar user-avatar">
+                <!-- Insert user avatar image here -->
+                <img src="{% static 'img/student.jpeg' %}" alt="" />
+            </div>
         </div>
         <div class="chatbox user-chatbox">
-          <p>${message}</p>
+            <p>${message}</p>
         </div>`;
 
             chatArea.appendChild(chatItem);
+            chatItem.scrollIntoView({ behavior: 'smooth', block: 'end' });
             messageInput.value = '';
-            focusEl.scrollIntoView();
-
+            chatArea.scrollTop = chatArea.scrollHeight;
             fetch('', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -146,24 +146,36 @@
                 .then(response => response.json())
                 .then(data => {
                     const response = data.response;
+                    const responseChunks = response.split('');
                     const chatItem = document.createElement('div');
                     chatItem.classList.add('chat', 'bot-chat');
+                    responseCounter++;
                     chatItem.innerHTML = `
             <div class="chat-header chat-header-ai">
-              <div class="avatar ai-avatar">
-                <!-- Insert AI avatar image here -->
-                <img src="{% static 'img/chatbot.png' %}" alt="" />
-              </div>
-              <p>AI</p>
+                <div class="avatar ai-avatar">
+                    <!-- Insert AI avatar image here -->
+                    <img src="{% static 'img/chatbot.png' %}" alt="" />
+                </div>
+                <p>AI</p>
             </div>
-            <div class="chatbox ai-chatbox">
-              <p>${response}</p>
-            </div>`;
+            <div class="chatbox ai-chatbox" id="bot-response-${responseCounter}"></div>`;
                     chatArea.appendChild(chatItem);
+                    const botResponseDiv = document.getElementById(`bot-response-${responseCounter}`);
+                    let i = 0;
+                    const typingInterval = setInterval(() => {
+                        if (i < responseChunks.length) {
+                            botResponseDiv.textContent += responseChunks[i];
+                            i++;
+                        } else {
+                            clearInterval(typingInterval);
+                            chatArea.scrollTop = chatArea.scrollHeight;
+                        }
+                    }, 1);
                 });
         });
 
     </script>
+
 </body>
 
 </html>

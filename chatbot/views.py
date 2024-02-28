@@ -8,12 +8,13 @@ from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from .models import Chat, ChatModel, Document
 from .forms import DocumentForm
+from .permissions import document_required
 from django.forms import formset_factory
 
 
 from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader
 from PyPDF2 import PdfReader
-from docx import Document
+#from docx import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 
 from langchain_community.vectorstores import FAISS
@@ -190,19 +191,6 @@ def upload_file(request):
 ############################################################################
 
 
-""" def format_conversation_history(conversation_history):
-    formatted_history = [{'role': 'system', 'content': "You are a note reading assistant"},]
-    for prompt, response in conversation_history.items():
-        tempdict = {}
-        if 'user_msg' in prompt.split():
-            tempdict['role'] = 'user'
-        else:
-            tempdict['role'] = 'assistant'
-        tempdict['content'] = response
-        formatted_history.append(tempdict)
-    return formatted_history """
-
-
 def format_conversation_history(conversation_history):
     """
     Format the conversation history to be passed to default_query parameter.
@@ -250,21 +238,7 @@ def get_response_from_student_data(user, query, k=2):
         search_results[filename]  = " ".join([d.page_content for d in docs])
     
     conversation_history = format_conversation_history(user_chat.conversation_history)
-    """ chatconversation_items = list(user_chat.conversation_history.items())
-    if len(chatconversation_items) >= 4:
-        last_entries = chatconversation_items[-4:]
-    elif len(chatconversation_items) >= 2:
-        last_entries = chatconversation_items[-2:]
-    else:
-        last_entries = []
-    for index, (prompt_key, response_key) in enumerate(last_entries, start=1):
-        tempdict={}
-        if 'user_msg' in prompt_key.split():
-            tempdict['role'] = 'user'
-        else:
-            tempdict['role'] = 'assistant'
-        tempdict['content'] = response_key
-        conversation_history.append(tempdict) """
+
     
 
     system_message = f"""
@@ -303,7 +277,7 @@ def get_response_from_student_data(user, query, k=2):
     You'll achieve this by providing concise yet comprehensive explanations, examples, and analogies when necessary.
 
     Task Details:
-    Your task is to CONTINUE THIS CONVERSATION: {conversation_history} AND respond to user questions using your knowledge base with the provided lecture notes as context. The Conversation history gives you
+    Your task is to CONTINUE YOUR CONVERSATION WITH THIS USER BY RESPONDING  to user questions using your knowledge base with the provided lecture notes as context. The Conversation history gives you
     context and  insight into your recent interation with the user. Your responses should be 
     brief, comprehensive, and directly related to the documents provided. If a question falls outside the scope of 
     the provided context and the context of the provided recent conversation history,
@@ -314,7 +288,7 @@ def get_response_from_student_data(user, query, k=2):
     - User: {user} (This variable represents the user's name or identifier.)
     - Question: {question} (The question posed by the user.)
     - Documents: {docs} (List of documents from the lecture notes used as context.)
-    - Conversation:  (A dictionary of recent history past conversations with the user)
+    - Conversation: {conversation_history}  (A dictionary of recent history past conversations with the user)
 
     Remember, your role is to assist students in understanding their study materials better using your knowledge base with the provided lecture notes as context 
     (you only refer or call their names when necessary). Good luck!
@@ -330,6 +304,7 @@ def get_response_from_student_data(user, query, k=2):
 
 
 @login_required
+@document_required
 def chatbot(request):
     chats = ChatModel.objects.filter(user=request.user).order_by('-created_at').first()
     if request.method == 'POST':

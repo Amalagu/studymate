@@ -1,173 +1,173 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>My Title</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
+    <title>Study Mate</title>
+
     <style>
-        body,
-        html {
-            height: 100%;
-        }
-
-        .messages-box {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .messages-list {
-            padding-left: 0;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            list-style: none;
-        }
-
-        .message-text {
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .sent {
-            background-color: #dcf8c6;
-            align-self: flex-end;
-        }
-
-        .received {
-            background-color: #f1f0f0;
-            align-self: flex-start;
-        }
-
-        .message-form {
+        .container {
             display: flex;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px;
-            background-color: #f8f9fa;
         }
 
-        .message-input {
+        .pdf-container {
             flex: 1;
-            border-radius: 0;
-            border-right: none;
-        }
-
-        .btn-send {
-            border-radius: 0;
+            height: 100vh;
+            /* Adjust height as needed */
+            overflow: auto;
         }
 
         .chat-container {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            flex: 1;
         }
     </style>
 </head>
 
 <body>
-    <div class="chat-container">
-        <div class="card flex-grow-1">
-            <div class="card-header bg-primary text-white">Chat</div>
 
-            <div class="card-header bg-primary text-white"><b>Welcome, User</b> <a style="color: yellow;"
-                    href="logout">Logout</a></div>
+    <!-- Menu for small screens -->
+    <div class="header-options-small" id="menu">
+        <button type="button" class="mode-button">
+            <p>Light mode</p>
+            <span class="material-symbols-rounded">light_mode</span>
+        </button>
+        <!-- Logout -->
+        <a href="{% url 'logout' %}">
+            <button type="button" class="logout-button">Logout</button>
+        </a>
+    </div>
 
-            <div class="card-header bg-primary text-white"><a style="color: yellow" href="login">Login</a> <a
-                    style="color: yellow;" href="register">Register</a></div>
+    <div class="overlay"></div>
 
-            <div class="card-body messages-box">
-
-                <ul class="list-unstyled messages-list">
-
-                    <!-- <li class="message received">
-                <div class="message-text">
-                  <div class="message-sender">
-                    <b>AI Chatbot</b>
-                  </div>
-                  <div class="message-content">
-                    Hi {{user.username}}, I am your AI Chatbot, you can ask me anything.
-                  </div>
-                </div>
-              </li> -->
-
-                    <ul class="chat">
-
-                        <li class="message sent">
-                            <div class="message-text">
-                                <div class="message-sender">
-                                    <b>You</b>
-                                </div>
-                                <div class="message-content">
-                                    Hello ChatBot
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="message received">
-                            <div class="message-text">
-                                <div class="message-sender">
-                                    <b>AI Chatbot</b>
-                                </div>
-                                <div class="message-content">
-                                    Hello Human
-                                </div>
-                            </div>
-                        </li>
-
-                    </ul>
+    <div class="container">
+        <!-- PDF container on the right -->
+        <div class="pdf-container">
+            <!-- Embed your PDF viewer here -->
+            <!-- <iframe src="http://localhost:8000/media/uploads/CSC_511_RESEARCH_PAPER.pdf" width="100%"
+                height="100%"></iframe> -->
+            <canvas id="pdf-render"></canvas>
 
 
 
-                </ul>
 
-            </div>
-            <br><br>
-            <br><br>
-            <br><br>
         </div>
-        <form class="message-form">
 
-            <div class="input-group">
-                <input type="text" class="form-control message-input" placeholder="Type your message...">
-                <div class="input-group-append">
-                    <button type="submit" class="btn btn-primary btn-send">Send</button>
+        <!-- Chat container on the left -->
+        <div class="chat-container">
+            <header>
+                <div class="header-top">
+                    <img src="{% static 'img/FUTO_logo.png' %}" alt="futo-logo">
+                    <h1>Study Mate</h1>
+
+                    <button type="button" class="more-button" id="more-button">
+                        <span class="material-symbols-rounded">more_vert</span>
+                    </button>
+
+                    <div class="header-options-large">
+                        <button type="button" class="mode-button">
+                            <span class="material-symbols-rounded">light_mode</span>
+                        </button>
+                        <!-- Logout -->
+                        <a href="logout">
+                            <button type="button" class="logout-button">Logout</button>
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </form>
+
+                <div class="header-bottom">
+                    <div class="avatar">A</div>
+                    <div class="username">Welcome, {{user.username}}</div>
+                </div>
+            </header>
+
+            <!-- Chat area -->
+            <section class="chat-area">
+                {% if chats %}
+                {% for key, value in chats.conversation_history.items %}
+                {% if 'user_msg' in key %}
+                <div class="chat user-chat">
+                    <div class="chat-header chat-header-user">
+                        <p>You</p>
+                        <div class="avatar user-avatar">
+                            <!-- Insert AI image here -->
+                            <img src="{% static 'img/student.jpeg' %}" alt="" />
+                        </div>
+                    </div>
+
+                    <div class="chatbox user-chatbox">
+                        <p>{{ value }}</p>
+                    </div>
+                </div>
+                {% elif 'bot_response' in key %}
+                <div class="chat bot-chat">
+                    <div class="chat-header chat-header-ai">
+                        <div class="avatar ai-avatar">
+                            <!-- Insert AI image here -->
+                            <img src="{% static 'img/chatbot.png' %}" alt="" />
+                        </div>
+                        <p>AI</p>
+                    </div>
+
+                    <div class="chatbox ai-chatbox">
+                        <p> {{ value }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+
+                <!-- <div class="focus-el"></div> -->
+            </section>
+
+            <!-- Footer -->
+            <footer>
+                <form method="post" class="message-form">
+                    {% csrf_token %}
+                    <input type="text" class="message-input" placeholder="Your message..." />
+                    <button type="submit" class="submit-btn">
+                        <span class="material-symbols-rounded">send</span>
+                    </button>
+                </form>
+            </footer>
+        </div>
     </div>
 
     <script>
-        const messagesList = document.querySelector('.messages-list');
+        const chatArea = document.querySelector('.chat-area');
         const messageForm = document.querySelector('.message-form');
         const messageInput = document.querySelector('.message-input');
+        const focusEl = document.querySelector('.focus-el')
+
 
         messageForm.addEventListener('submit', (event) => {
             event.preventDefault();
-
             const message = messageInput.value.trim();
             if (message.length === 0) {
                 return;
             }
 
-            const messageItem = document.createElement('li');
-            messageItem.classList.add('message', 'sent');
-            messageItem.innerHTML = `
-              <div class="message-text">
-                  <div class="message-sender">
-                      <b>You</b>
-                  </div>
-                  <div class="message-content">
-                      ${message}
-                  </div>
-              </div>`;
-            messagesList.appendChild(messageItem);
+            const chatItem = document.createElement('div');
+            chatItem.classList.add('chat', 'user-chat');
+            chatItem.innerHTML = `
+        <div class="chat-header chat-header-user">
+          <p>You</p>
+          <div class="avatar user-avatar">
+            <!-- Insert user avatar image here -->
+            <img src="{% static 'img/student.jpeg' %}" alt="" />
+          </div>
+        </div>
+        <div class="chatbox user-chatbox">
+          <p>${message}</p>
+        </div>`;
 
+            chatArea.appendChild(chatItem);
             messageInput.value = '';
+            focusEl.scrollIntoView();
 
             fetch('', {
                 method: 'POST',
@@ -180,27 +180,39 @@
                 .then(response => response.json())
                 .then(data => {
                     const response = data.response;
-                    const messageItem = document.createElement('li');
-                    messageItem.classList.add('message', 'received');
-                    messageItem.innerHTML = `
-              <div class="message-text">
-                  <div class="message-sender">
-                    <b>AI Chatbot</b>
-                  </div>
-                  <div class="message-content">
-                      ${response}
-                  </div>
+                    const chatItem = document.createElement('div');
+                    chatItem.classList.add('chat', 'bot-chat');
+                    chatItem.innerHTML = `
+            <div class="chat-header chat-header-ai">
+              <div class="avatar ai-avatar">
+                <!-- Insert AI avatar image here -->
+                <img src="{% static 'img/chatbot.png' %}" alt="" />
               </div>
-                `;
-                    messagesList.appendChild(messageItem);
+              <p>AI</p>
+            </div>
+            <div class="chatbox ai-chatbox">
+              <p>${response}</p>
+            </div>`;
+                    chatArea.appendChild(chatItem);
                 });
         });
 
+        // PDF.js code to render a PDF file
+        const pdfUrl = 'http://localhost:8000/media/uploads/CSC_511_RESEARCH_PAPER.pdf';
+        pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+            pdf.getPage(1).then(page => {
+                const canvas = document.getElementById('pdf-render');
+                const context = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: 1.5 });
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                page.render({ canvasContext: context, viewport: viewport });
+            });
+        });
     </script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    {% block scripts %}{% endblock %}
+    <script>
+
+    </script>
 </body>
 
 </html>
