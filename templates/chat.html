@@ -20,11 +20,17 @@
             <p>Light mode</p>
             <span class="material-symbols-rounded">light_mode</span>
         </button>
+        <!-- New Chat -->
+        <a href="{% url 'upload_file' %}">
+            <button type="button" class="logout-button">New Chat</button>
+        </a>
         <!-- Logout -->
         <a href="{% url 'logout' %}">
             <button type="button" class="logout-button">Logout</button>
         </a>
+
     </div>
+
 
     <div class="overlay"></div>
 
@@ -41,6 +47,10 @@
                 <button type="button" class="mode-button">
                     <span class="material-symbols-rounded">light_mode</span>
                 </button>
+                <!-- New Chat -->
+                <a href="{% url 'upload_file' %}">
+                    <button type="button" class="logout-button">New Chat</button>
+                </a>
                 <!-- Logout -->
                 <a href="logout">
                     <button type="button" class="logout-button">Logout</button>
